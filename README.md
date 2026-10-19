@@ -3,6 +3,11 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+**[Try the live demo](https://amanksingh633.github.io/report-comparator/)**: runs in your browser, nothing to
+install, nothing uploaded.
+
+[![Live demo screenshot](docs/screenshot.jpg)](https://amanksingh633.github.io/report-comparator/)
+
 Diff two CSV or Excel reports by key and see exactly what changed: missing rows, extra rows,
 schema changes, and every mismatched cell, with numeric tolerances. Use it from the command line
 as a **release gate** (non-zero exit code on any difference) or in a small **Streamlit** UI.
@@ -16,6 +21,14 @@ diverge.
 
 > Independent, generic implementation built on synthetic data. It contains no employer code,
 > customer data, or real report layouts.
+
+## Live demo
+
+The demo page loads the real `report_comparator` package and pandas into your browser with
+[Pyodide](https://pyodide.org) (WebAssembly), so there is no server and your data never leaves
+the page. It opens with the bundled synthetic invoices; paste or load your own CSVs to try it.
+The files under `docs/` are copies of `src/` kept in sync by `scripts/sync_demo.py` and checked
+by a test.
 
 ## Quick start
 
@@ -94,8 +107,10 @@ print(render_markdown(result))
 ```text
 src/report_comparator/   compare.py (core), render.py (Markdown), cli.py
 app.py                   Streamlit UI
+docs/                    GitHub Pages live demo (Pyodide) + screenshot
+scripts/sync_demo.py     copies the package and sample data into docs/
 sample_data/             synthetic baseline/candidate + generator script
-tests/                   17 tests: comparison rules, CLI exit codes, UI smoke tests
+tests/                   22 tests: comparison rules, CLI exit codes, UI and demo checks
 ```
 
 ## Development

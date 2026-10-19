@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Report Comparator: live demo</title>
+<meta name="description" content="Compare two CSV reports by key, in your browser. Runs the real Python package with pandas via Pyodide; nothing is uploaded.">
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1b2430; --muted: #5b6776; --line: #dfe3e9;
+    --accent: #2457d6; --accent-ink: #ffffff; --ok: #137a3f; --ok-bg: #e4f5ea;
+    --bad: #b3261e; --bad-bg: #fbe9e7; --code: #f0f2f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f141b; --card: #171e27; --text: #e6eaf0; --muted: #9aa6b5; --line: #2a3441;
+      --accent: #6b95ff; --accent-ink: #0b1220; --ok: #5fd38d; --ok-bg: #12301f;
+      --bad: #ff8a80; --bad-bg: #3a1c1a; --code: #1f2833;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+  header h1 { margin: 0 0 4px; font-size: 26px; }
+  header p { margin: 0; color: var(--muted); }
+  a { color: var(--accent); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; margin-top: 16px; }
+  .status { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #e0a100; flex: none; }
+  .dot.ready { background: var(--ok); } .dot.fail { background: var(--bad); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+  label, .lbl { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  textarea, input[type=text], input[type=number] { width: 100%; background: var(--bg); color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: 12px/1.4 ui-monospace, Consolas, monospace; }
+  input[type=text], input[type=number] { font: 14px system-ui, sans-serif; }
+  textarea { height: 150px; resize: vertical; white-space: pre; }
+  .row { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
+  .opts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 720px) { .opts { grid-template-columns: 1fr 1fr; } }
+  button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--card); color: var(--text); padding: 7px 12px; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  .small { font-size: 12px; padding: 4px 9px; }
+  .banner { border-radius: 10px; padding: 12px 14px; font-weight: 700; }
+  .banner.pass { background: var(--ok-bg); color: var(--ok); }
+  .banner.fail { background: var(--bad-bg); color: var(--bad); }
+  .metrics { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 12px; }
+  @media (max-width: 800px) { .metrics { grid-template-columns: repeat(3, 1fr); } }
+  .metric { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+  .metric b { display: block; font-size: 22px; }
+  .metric span { font-size: 12px; color: var(--muted); }
+  .tabs { display: flex; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
+  .tabs button[aria-selected=true] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .scroll { overflow: auto; max-height: 360px; margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { position: sticky; top: 0; background: var(--code); }
+  pre { background: var(--code); padding: 12px; border-radius: 8px; overflow: auto; max-height: 360px; font-size: 12px; }
+  .err { color: var(--bad); font-weight: 600; }
+  .muted { color: var(--muted); } ul { margin: 6px 0 0; padding-left: 20px; }
+  footer { margin-top: 24px; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Report Comparator</h1>
+    <p>Diff two CSV reports by key and see exactly what changed.
+      This page runs the real <a href="https://github.com/amanksingh633/report-comparator">Python package</a>
+      (pandas) in your browser. Nothing you paste or load is uploaded.</p>
+  </header>
+
+  <div class="card">
+    <div class="status"><span id="dot" class="dot"></span><span id="status">Starting Python…</span></div>
+  </div>
+
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <label for="a">Baseline (known good)</label>
+        <textarea id="a" spellcheck="false"></textarea>
+        <div class="row"><input type="file" id="fa" accept=".csv,text/csv"></div>
+      </div>
+      <div>
+        <label for="b">Candidate (to validate)</label>
+        <textarea id="b" spellcheck="false"></textarea>
+        <div class="row"><input type="file" id="fb" accept=".csv,text/csv"></div>
+      </div>
+    </div>
+    <div class="opts" style="margin-top:14px">
+      <div><label for="keys">Key column(s)</label><input type="text" id="keys" value="invoice_id"></div>
+      <div><label for="abs">Absolute tolerance</label><input type="number" id="abs" value="0.01" min="0" step="any"></div>
+      <div><label for="rel">Relative tolerance</label><input type="number" id="rel" value="0" min="0" step="any"></div>
+      <div><label for="ignore">Ignore columns</label><input type="text" id="ignore" value="generated_at"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="primary" id="run" disabled>Compare</button>
+      <button id="reset" class="small">Reset to sample data</button>
+      <span class="muted" id="hint">Sample: 200 synthetic invoices with a few planted differences.</span>
+    </div>
+    <details style="margin-top:12px"><summary>Things to try</summary>
+      <ul>
+        <li>Set the absolute tolerance to <code>0</code>: three tiny float differences (+0.004) appear.</li>
+        <li>Clear "Ignore columns": every row now differs on <code>generated_at</code>.</li>
+        <li>Delete a row from the candidate: it shows up under "Missing rows".</li>
+        <li>Use two keys, for example <code>invoice_id,vendor</code>.</li>
+      </ul>
+    </details>
+  </div>
+
+  <div id="out" class="card" hidden></div>
+
+  <footer>
+    Source and docs: <a href="https://github.com/amanksingh633/report-comparator">github.com/amanksingh633/report-comparator</a>.
+    Synthetic data only.
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js" crossorigin="anonymous"></script>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const PKG_FILES = ["__init__.py", "compare.py", "render.py"];
+let entry = null;
+let lastMarkdown = "";
+
+function setStatus(text, state) {
+  $("status").textContent = text;
+  $("dot").className = "dot" + (state ? " " + state : "");
+}
+
+async function fetchText(path) {
+  const r = await fetch(path);
+  if (!r.ok) throw new Error("Could not load " + path + " (" + r.status + ")");
+  return r.text();
+}
+
+async function loadSample() {
+  const [a, b] = await Promise.all([fetchText("sample/baseline.csv"), fetchText("sample/candidate.csv")]);
+  $("a").value = a;
+  $("b").value = b;
+  $("keys").value = "invoice_id"; $("abs").value = "0.01"; $("rel").value = "0"; $("ignore").value = "generated_at";
+}
+
+async function startPython() {
+  try {
+    if (typeof loadPyodide !== "function") throw new Error("Pyodide script did not load (offline or blocked CDN?)");
+    setStatus("Loading Python and pandas (about 15 MB on first visit)…");
+    const py = await loadPyodide();
+    await py.loadPackage("pandas");
+    py.FS.mkdirTree("/home/pyodide/report_comparator");
+    for (const f of PKG_FILES) {
+      py.FS.writeFile("/home/pyodide/report_comparator/" + f, await fetchText("py/report_comparator/" + f));
+    }
+    py.FS.writeFile("/home/pyodide/web_entry.py", await fetchText("py/web_entry.py"));
+    entry = py.pyimport("web_entry");
+    setStatus("Ready. Python " + py.runPython("import sys; sys.version.split()[0]") + " with pandas, running locally.", "ready");
+    $("run").disabled = false;
+    await samplePromise;
+    compare();
+  } catch (err) {
+    setStatus("Could not start Python: " + err.message, "fail");
+  }
+}
+
+function el(tag, props, ...kids) {
+  const node = document.createElement(tag);
+  Object.assign(node, props || {});
+  for (const k of kids) node.append(k);
+  return node;
+}
+
+function table(rows, columns) {
+  if (!rows.length) return el("p", { className: "muted" }, "None.");
+  const head = el("tr", {}, ...columns.map((c) => el("th", {}, c)));
+  const body = rows.map((r) => el("tr", {}, ...columns.map((c) => el("td", {}, r[c] == null ? "" : String(r[c])))));
+  return el("div", { className: "scroll" }, el("table", {}, el("thead", {}, head), el("tbody", {}, ...body)));
+}
+
+function metric(label, value) {
+  return el("div", { className: "metric" }, el("b", {}, String(value)), el("span", {}, label));
+}
+
+function render(res) {
+  const out = $("out");
+  out.hidden = false;
+  out.replaceChildren();
+  if (res.error) {
+    out.append(el("p", { className: "err" }, "Cannot compare: " + res.error));
+    return;
+  }
+  const s = res.summary;
+  lastMarkdown = res.markdown;
+  out.append(el("div", { className: "banner " + (s.passed ? "pass" : "fail") },
+    s.passed ? "PASS: reports match" : "FAIL: reports differ"));
+  out.append(el("div", { className: "metrics" },
+    metric("Rows compared", s.rows_compared), metric("Missing in candidate", s.missing_in_candidate),
+    metric("Extra in candidate", s.extra_in_candidate), metric("Mismatched rows", s.mismatched_rows),
+    metric("Mismatched cells", s.mismatched_cells), metric("Columns compared", s.columns_compared)));
+
+  const schema = [];
+  if (s.columns_only_in_baseline.length) schema.push("Only in baseline: " + s.columns_only_in_baseline.join(", "));
+  if (s.columns_only_in_candidate.length) schema.push("Only in candidate: " + s.columns_only_in_candidate.join(", "));
+  if (schema.length) out.append(el("p", { className: "err" }, "Schema differences. " + schema.join(" | ")));
+
+  const keyCols = res.keys;
+  const panels = {
+    "Mismatched cells": el("div", {}, Object.keys(res.by_column).length
+      ? el("p", { className: "muted" }, "By column: " + Object.entries(res.by_column).map(([k, v]) => k + " (" + v + ")").join(", "))
+      : el("span"), table(res.mismatches, [...keyCols, "column", "baseline", "candidate", "delta"])),
+    "Missing rows": table(res.missing, keyCols),
+    "Extra rows": table(res.extra, keyCols),
+    "Markdown report": el("div", {}, el("pre", {}, res.markdown),
+      (() => { const b = el("button", { className: "small" }, "Download .md");
+        b.onclick = () => { const a = el("a", { href: URL.createObjectURL(new Blob([lastMarkdown], { type: "text/markdown" })), download: "report.md" }); a.click(); };
+        return b; })()),
+  };
+  const tabs = el("div", { className: "tabs", role: "tablist" });
+  const shown = el("div");
+  const select = (name) => {
+    for (const b of tabs.children) b.setAttribute("aria-selected", String(b.dataset.name === name));
+    shown.replaceChildren(panels[name]);
+  };
+  for (const name of Object.keys(panels)) {
+    const b = el("button", {}, name);
+    b.dataset.name = name; b.setAttribute("role", "tab"); b.onclick = () => select(name);
+    tabs.append(b);
+  }
+  out.append(tabs, shown);
+  if (res.truncated) out.append(el("p", { className: "muted" }, "Tables show the first 500 rows; the Markdown report summarises the rest."));
+  select("Mismatched cells");
+}
+
+function compare() {
+  if (!entry) return;
+  const btn = $("run");
+  btn.disabled = true;
+  // yield once so the button state paints before the synchronous Python call
+  setTimeout(() => {
+    try {
+      const raw = entry.run_comparison($("a").value, $("b").value, $("keys").value,
+        parseFloat($("abs").value) || 0, parseFloat($("rel").value) || 0, $("ignore").value);
+      render(JSON.parse(raw));
+    } catch (err) {
+      render({ error: String(err.message || err) });
+    } finally { btn.disabled = false; }
+  }, 10);
+}
+
+for (const [fileId, areaId] of [["fa", "a"], ["fb", "b"]]) {
+  $(fileId).addEventListener("change", async (e) => {
+    const f = e.target.files[0];
+    if (f) $(areaId).value = await f.text();
+  });
+}
+$("run").onclick = compare;
+$("reset").onclick = () => loadSample().then(compare);
+
+const samplePromise = loadSample().catch((e) => setStatus("Could not load sample data: " + e.message, "fail"));
+startPython();
+</script>
+</body>
+</html>
