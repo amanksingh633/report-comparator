@@ -1,5 +1,6 @@
 # Report Comparator
 
+[![CI](https://github.com/amanksingh633/report-comparator/actions/workflows/ci.yml/badge.svg)](https://github.com/amanksingh633/report-comparator/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -84,7 +85,7 @@ so only real differences are reported.
 - **Ignore columns**: skip volatile fields such as generation timestamps.
 - **Outputs**: Markdown summary (`-o report.md`) for PRs and release notes, plus CSV download of
   mismatches in the UI.
-- **CI-friendly**: meaningful exit codes (0 match, 1 differ, 2 bad input).
+- **CI-friendly**: meaningful exit codes (0 match, 1 differ, 2 bad input). The project's own CI runs lint and tests on Python 3.10 and 3.12.
 
 ## Use as a library
 
