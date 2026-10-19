@@ -1,0 +1,64 @@
+{
+ "by_column": {
+  "status": 1,
+  "tax": 1,
+  "total": 1
+ },
+ "extra": [
+  {
+   "invoice_id": "INV-0201"
+  },
+  {
+   "invoice_id": "INV-0202"
+  }
+ ],
+ "keys": [
+  "invoice_id"
+ ],
+ "markdown": "# Report comparison: FAIL: reports differ\n\n| Metric | Value |\n|---|---|\n| Key columns | invoice_id |\n| Rows in baseline / candidate | 200 / 200 |\n| Rows compared | 198 |\n| Missing in candidate | 2 |\n| Extra in candidate | 2 |\n| Mismatched rows / cells | 3 / 3 |\n\n## Mismatches by column\n\n| Column | Cells |\n|---|---|\n| total | 1 |\n| tax | 1 |\n| status | 1 |\n\n## Mismatched cells\n\n| invoice_id | column | baseline | candidate | delta |\n|---|---|---|---|---|\n| INV-0011 | total | 37354.17 | 37479.67 | 125.5 |\n| INV-0056 | tax | 425.7 | 468.27 | 42.57 |\n| INV-0091 | status | APPROVED | PENDING |  |\n\n## Missing in candidate\n\n| invoice_id |\n|---|\n| INV-0121 |\n| INV-0122 |\n\n## Extra in candidate\n\n| invoice_id |\n|---|\n| INV-0201 |\n| INV-0202 |\n",
+ "mismatches": [
+  {
+   "baseline": 37354.17,
+   "candidate": 37479.67,
+   "column": "total",
+   "delta": 125.5,
+   "invoice_id": "INV-0011"
+  },
+  {
+   "baseline": 425.7,
+   "candidate": 468.27,
+   "column": "tax",
+   "delta": 42.57,
+   "invoice_id": "INV-0056"
+  },
+  {
+   "baseline": "APPROVED",
+   "candidate": "PENDING",
+   "column": "status",
+   "delta": null,
+   "invoice_id": "INV-0091"
+  }
+ ],
+ "missing": [
+  {
+   "invoice_id": "INV-0121"
+  },
+  {
+   "invoice_id": "INV-0122"
+  }
+ ],
+ "summary": {
+  "columns_compared": 6,
+  "columns_only_in_baseline": [],
+  "columns_only_in_candidate": [],
+  "extra_in_candidate": 2,
+  "mismatched_cells": 3,
+  "mismatched_rows": 3,
+  "missing_in_candidate": 2,
+  "passed": false,
+  "rows_baseline": 200,
+  "rows_candidate": 200,
+  "rows_compared": 198
+ },
+ "truncated": false
+}

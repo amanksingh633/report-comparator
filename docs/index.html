@@ -3,6 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<meta property="og:type" content="website">
+<meta property="og:title" content="Report Comparator: live demo">
+<meta property="og:description" content="Diff two CSV reports by key and see exactly what changed. Runs real Python and pandas in your browser; nothing is uploaded.">
+<meta property="og:url" content="https://amanksingh633.github.io/report-comparator/">
+<meta property="og:image" content="https://amanksingh633.github.io/report-comparator/screenshot.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Report Comparator: live demo">
+<meta name="twitter:description" content="Diff two CSV reports by key and see exactly what changed. Runs real Python and pandas in your browser; nothing is uploaded.">
+<meta name="twitter:image" content="https://amanksingh633.github.io/report-comparator/screenshot.jpg">
 <title>Report Comparator: live demo</title>
 <meta name="description" content="Compare two CSV reports by key, in your browser. Runs the real Python package with pandas via Pyodide; nothing is uploaded.">
 <style>
@@ -150,8 +160,7 @@ async function startPython() {
   try {
     if (typeof loadPyodide !== "function") throw new Error("Pyodide script did not load (offline or blocked CDN?)");
     setStatus("Loading Python and pandas (about 15 MB on first visit)…");
-    const py = await loadPyodide();
-    await py.loadPackage("pandas");
+    const py = await loadPyodide({ packages: ["pandas"] });
     py.FS.mkdirTree("/home/pyodide/report_comparator");
     for (const f of PKG_FILES) {
       py.FS.writeFile("/home/pyodide/report_comparator/" + f, await fetchText("py/report_comparator/" + f));
@@ -185,10 +194,11 @@ function metric(label, value) {
   return el("div", { className: "metric" }, el("b", {}, String(value)), el("span", {}, label));
 }
 
-function render(res) {
+function render(res, note) {
   const out = $("out");
   out.hidden = false;
   out.replaceChildren();
+  if (note) out.append(el("p", { className: "muted" }, note));
   if (res.error) {
     out.append(el("p", { className: "err" }, "Cannot compare: " + res.error));
     return;
@@ -260,6 +270,14 @@ for (const [fileId, areaId] of [["fa", "a"], ["fb", "b"]]) {
 $("run").onclick = compare;
 $("reset").onclick = () => loadSample().then(compare);
 
+// Show a saved copy of the sample result straight away, while the Python engine loads.
+async function showSnapshot() {
+  try {
+    const res = await (await fetch("sample/precomputed.json")).json();
+    if (!entry) render(res, "Saved sample result, computed with the same Python code. The live engine is loading; Compare unlocks when it is ready.");
+  } catch { /* the live run will fill this in */ }
+}
+showSnapshot();
 const samplePromise = loadSample().catch((e) => setStatus("Could not load sample data: " + e.message, "fail"));
 startPython();
 </script>

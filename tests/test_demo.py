@@ -71,3 +71,10 @@ def test_web_entry_turns_bad_input_into_an_error_message():
     assert "error" in _run(baseline_csv="")
     dup = "id,v\n1,a\n1,b\n"
     assert "duplicate" in _run(baseline_csv=dup, candidate_csv=dup, keys="id", ignore="")["error"]
+
+
+def test_precomputed_snapshot_matches_a_live_run():
+    """The page shows this file before Python loads, so it must equal what the engine produces."""
+    snapshot = json.loads((DOCS / "sample" / "precomputed.json").read_text(encoding="utf-8"))
+    live = _run()
+    assert snapshot == live, "docs/sample/precomputed.json is stale: run scripts/sync_demo.py"
