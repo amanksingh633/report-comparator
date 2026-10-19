@@ -159,7 +159,7 @@ async function loadSample() {
 async function startPython() {
   try {
     if (typeof loadPyodide !== "function") throw new Error("Pyodide script did not load (offline or blocked CDN?)");
-    setStatus("Loading Python and pandas (about 15 MB on first visit)…");
+    setStatus("Loading Python and pandas (about 15 MB on first visit). A saved sample result is already shown below.");
     const py = await loadPyodide({ packages: ["pandas"] });
     py.FS.mkdirTree("/home/pyodide/report_comparator");
     for (const f of PKG_FILES) {
