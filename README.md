@@ -71,7 +71,7 @@ so only real differences are reported.
 - **Ignore columns**: skip volatile fields such as generation timestamps.
 - **Outputs**: Markdown summary (`-o report.md`) for PRs and release notes, plus CSV download of
   mismatches in the UI.
-- **CI-friendly**: meaningful exit codes, tested on Python 3.10 and 3.12.
+- **CI-friendly**: meaningful exit codes (0 match, 1 differ, 2 bad input).
 
 ## Use as a library
 
