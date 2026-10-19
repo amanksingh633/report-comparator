@@ -30,8 +30,8 @@
   .status { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
   .dot { width: 9px; height: 9px; border-radius: 50%; background: #e0a100; flex: none; }
   .dot.ready { background: var(--ok); } .dot.fail { background: var(--bad); }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+  .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
   label, .lbl { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
   textarea, input[type=text], input[type=number] { width: 100%; background: var(--bg); color: var(--text);
     border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: 12px/1.4 ui-monospace, Consolas, monospace; }
