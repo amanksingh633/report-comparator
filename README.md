@@ -23,6 +23,32 @@ diverge.
 > Independent, generic implementation built on synthetic data. It contains no employer code,
 > customer data, or real report layouts.
 
+## Product notes
+
+How I would frame this as a product, and the decisions behind it. These are design rationale and
+hypotheses; nothing here is a measured result.
+
+- **Problem.** After a configuration or code change, "did the report output change?" is usually
+  answered by eyeballing two spreadsheets. That is slow, inconsistent between reviewers, and easy
+  to get wrong under release pressure.
+- **Users.** The person signing off a release (implementation, operations or QA) and the
+  reviewer who must trust that sign-off.
+- **Decisions and trade-offs.**
+  - *Match on keys, not row order*: reports are re-sorted between runs, so row position means
+    nothing. The cost is that duplicate keys must be rejected loudly.
+  - *Explicit tolerances*: float noise should not fail a release, but real differences must.
+    Choosing the tolerance is a business policy, so the default is zero and it is set per run.
+  - *Volatile columns are ignored only by name*, so silence is always a visible decision.
+  - *Schema changes fail the gate*: stricter than a lenient diff, because a silently added or
+    dropped column is exactly what a reviewer needs to see.
+  - *Exit codes and a browser demo*: the CLI makes it a release gate; the in-browser demo lets a
+    non-technical reviewer try it with nothing uploaded.
+- **How I would measure it.** Time to validate a release versus the manual method; defects found
+  after release; false alarms (differences a reviewer dismissed); how often it is run per release.
+- **Next.** Saved comparison profiles per report, multi-sheet Excel, and a reviewer sign-off note
+  attached to each run.
+- **Known gaps.** Validated only on synthetic data here; no pilot, so no outcome data.
+
 ## Live demo
 
 The demo page loads the real `report_comparator` package and pandas into your browser with
